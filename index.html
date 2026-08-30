@@ -3,202 +3,229 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AMIR FX QUOTEX BINARY AI BOT v5.0</title>
+  <title>AMIR FX AI BOT - QUOTEX</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background-color: #060913; color: #fff; display: flex; justify-content: center; align-aligns: center; min-height: 100vh; padding: 12px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #030712; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
 
-    .card { background: #0c101d; border: 1px solid rgba(0, 255, 204, 0.25); border-radius: 16px; padding: 18px; width: 100%; max-width: 440px; box-shadow: 0 0 25px rgba(0, 255, 204, 0.15); }
+    /* Main Container Frame */
+    .app-card {
+      background: #080d1a;
+      border: 1.5px solid #00a3ff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 380px;
+      padding: 16px;
+      box-shadow: 0 0 30px rgba(0, 163, 255, 0.25);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
 
-    .header { text-align: center; margin-bottom: 12px; }
-    .header h2 { font-size: 19px; font-weight: 800; color: #00ffcc; letter-spacing: 1px; }
-    .accuracy-badge { display: inline-block; background: rgba(0, 255, 204, 0.12); color: #00ffcc; font-size: 11px; padding: 3px 10px; border-radius: 15px; border: 1px solid #00ffcc; font-weight: 600; margin-top: 4px; }
+    /* Top Profile Bar */
+    .profile-header { display: flex; align-items: center; justify-content: space-between; }
+    .profile-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00a3ff; background: #000; display: flex; justify-content: center; align-items: center; color: #00a3ff; font-weight: bold; font-size: 14px; }
+    .title-text h3 { font-size: 15px; font-weight: 800; color: #00a3ff; letter-spacing: 0.5px; }
+    .title-text p { font-size: 10px; color: #22c55e; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .dots-menu { color: #8a99ad; font-size: 18px; cursor: pointer; }
 
-    /* Auth Box */
-    .auth-box { display: flex; flex-direction: column; gap: 12px; }
-    input, select { width: 100%; padding: 12px; background: #13192b; border: 1px solid #222d47; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
-    input:focus, select:focus { border-color: #00ffcc; }
+    /* Win Rate Ticker */
+    .ticker-bar { display: flex; justify-content: space-between; background: rgba(0, 163, 255, 0.05); padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; border: 1px solid rgba(0, 163, 255, 0.1); }
+    .win-green { color: #22c55e; }
 
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #00ffcc, #00b386); color: #000; font-size: 15px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+    /* Market Selectors (OTC vs LIVE) */
+    .market-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mode-btn { background: rgba(15, 23, 42, 0.8); border: 1px solid #1e293b; border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+    .mode-btn.active { border-color: #00a3ff; background: rgba(0, 163, 255, 0.1); }
+    .mode-icon { color: #00a3ff; font-size: 16px; }
+    .mode-title { font-size: 11px; font-weight: 700; color: #fff; }
+    .mode-sub { font-size: 9px; color: #64748b; }
 
-    /* Main Bot Section */
-    .bot-ui { display: none; flex-direction: column; gap: 12px; }
-    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .label { font-size: 10px; color: #8a99ad; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+    /* Broker & Status Info */
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 12px; border: 1px solid #1e293b; }
+    .select-box select { width: 100%; background: transparent; border: none; color: #fff; font-size: 12px; font-weight: 700; outline: none; }
+    .status-item { font-size: 11px; }
+    .status-item span { color: #22c55e; font-weight: bold; }
 
-    /* Live Chart Box */
-    .chart-container { width: 100%; height: 210px; background: #13192b; border: 1px solid #222d47; border-radius: 10px; overflow: hidden; position: relative; }
+    /* AI Signal Engine & Circular Radar */
+    .engine-box { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(0, 163, 255, 0.2); border-radius: 16px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; position: relative; }
+    .engine-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .engine-title { font-size: 12px; font-weight: 800; color: #00a3ff; letter-spacing: 0.5px; }
+    .uptime-badge { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid #22c55e; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
 
-    /* Market Analysis Output Box */
-    .analysis-box { background: #13192b; border: 1px solid #222d47; border-radius: 10px; padding: 10px; text-align: center; }
-    .analysis-title { font-size: 10px; color: #8a99ad; text-transform: uppercase; letter-spacing: 0.5px; }
-    .analysis-result { font-size: 14px; font-weight: bold; margin-top: 3px; color: #00ffcc; }
+    /* Circle Radar */
+    .radar-circle { width: 110px; height: 110px; border-radius: 50%; border: 2px dashed rgba(0, 163, 255, 0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 10px 0; position: relative; transition: 0.3s; }
+    .radar-circle.scanning { border-color: #00a3ff; animation: rotate 2s linear infinite; }
+    @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Signal Modal Box */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
-    .modal-box { background: #0c101d; border-radius: 16px; padding: 22px; width: 100%; max-width: 340px; text-align: center; border: 2px solid #00ffcc; box-shadow: 0 0 25px rgba(0, 255, 204, 0.3); }
+    .thunder-icon { font-size: 22px; color: #eab308; margin-bottom: 4px; }
+    .standby-text { font-size: 11px; font-weight: 700; color: #fff; }
+    .sub-start { font-size: 8px; color: #64748b; margin-top: 2px; }
 
-    .signal-direction { font-size: 32px; font-weight: 900; margin: 12px 0; }
-    .call-text { color: #00ffcc; }
-    .put-text { color: #ff4d4d; }
+    /* Live Signal Alert Card */
+    .recent-win { width: 100%; background: rgba(0, 163, 255, 0.08); border: 1px solid rgba(0, 163, 255, 0.2); border-radius: 10px; padding: 6px 10px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
 
-    .meta-info { display: flex; justify-content: space-between; background: #13192b; padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #8a99ad; margin-bottom: 15px; }
+    /* Action Button */
+    .start-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #00a3ff, #0066ff); border: none; border-radius: 12px; color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; box-shadow: 0 0 15px rgba(0, 163, 255, 0.4); }
+
+    /* Bottom Nav Bar */
+    .bottom-nav { display: flex; justify-content: space-around; background: #0b1329; padding: 10px 0; border-radius: 14px; border: 1px solid #1e293b; margin-top: 5px; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: #64748b; font-size: 9px; cursor: pointer; }
+    .nav-item.active { color: #00a3ff; }
+    .nav-item i { font-size: 14px; }
+
+    /* Signal Result Popup Overlay */
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
+    .popup-card { background: #080d1a; border: 2px solid #00a3ff; border-radius: 18px; padding: 20px; width: 100%; max-width: 310px; text-align: center; box-shadow: 0 0 30px rgba(0, 163, 255, 0.4); }
+    .direction-badge { font-size: 28px; font-weight: 900; margin: 10px 0; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <div class="header">
-      <h2>QUOTEX VIP AI BOT</h2>
-      <span class="accuracy-badge">OVERALL ACCURACY 99%</span>
-    </div>
-
-    <!-- 1. License Key Access -->
-    <div id="authSection" class="auth-box">
-      <div>
-        <div class="label">VIP Access Key</div>
-        <input type="text" id="licenseKey" placeholder="AMIR-VIP-2026">
-      </div>
-      <button class="btn" onclick="checkLicense()">UNLOCK BOT</button>
-      <div id="errorMsg" style="color:#ff4d4d; font-size:11px; text-align:center; display:none;">Invalid Key! Use: AMIR-VIP-2026</div>
-    </div>
-
-    <!-- 2. Main Interface -->
-    <div id="botSection" class="bot-ui">
-      
-      <div class="controls-grid">
-        <!-- Quotex Binary Pair Selection -->
-        <div>
-          <div class="label">Quotex Asset</div>
-          <select id="pairSelect" onchange="updateChart()">
-            <option value="FX:EURUSD">EUR/USD (OTC/LIVE)</option>
-            <option value="FX:GBPUSD">GBP/USD (OTC/LIVE)</option>
-            <option value="FX:USDJPY">USD/JPY (OTC/LIVE)</option>
-            <option value="FX:AUDNZD">AUD/NZD (OTC/LIVE)</option>
-            <option value="FX:EURGBP">EUR/GBP (OTC/LIVE)</option>
-            <option value="CRYPTO:BTCUSD">BTC/USD (Crypto)</option>
-          </select>
-        </div>
-
-        <!-- Binary Timeframes (5s, 15s, 30s, 1m, 5m) -->
-        <div>
-          <div class="label">Expiry Time</div>
-          <select id="timeframeSelect">
-            <option value="5s">5 Seconds</option>
-            <option value="15s">15 Seconds</option>
-            <option value="30s">30 Seconds</option>
-            <option value="1m" selected>1 Minute</option>
-            <option value="5m">5 Minutes</option>
-          </select>
+  <div class="app-card">
+    
+    <div class="profile-header">
+      <div class="profile-info">
+        <div class="avatar">AMIR</div>
+        <div class="title-text">
+          <h3>AMIR FX</h3>
+          <p><i class="fa-solid fa-circle" style="font-size:7px;"></i> 2,904 ACTIVE TRADERS</p>
         </div>
       </div>
+      <div class="dots-menu"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+    </div>
 
-      <!-- Live Binary Chart Widget -->
-      <div class="chart-container" id="chartWidget"></div>
+    <div class="ticker-bar">
+      <span>EUR/USD (OTC) <span class="win-green">WIN 94%</span></span>
+      <span>USD/COP (OTC) <span class="win-green">WIN 94%</span></span>
+    </div>
 
-      <!-- Technical Indicator Analysis Output -->
-      <div class="analysis-box">
-        <div class="analysis-title">QUOTEX MARKET SCANNER</div>
-        <div id="analysisText" class="analysis-result">READY TO ANALYZE OTC/LIVE MARKET</div>
+    <div class="market-modes">
+      <div class="mode-btn active" id="otcBtn" onclick="setMode('OTC')">
+        <div class="mode-icon"><i class="fa-solid fa-cube"></i></div>
+        <div>
+          <div class="mode-title">OTC MARKET</div>
+          <div class="mode-sub">3s - 15m</div>
+        </div>
+      </div>
+      <div class="mode-btn" id="liveBtn" onclick="setMode('LIVE')">
+        <div class="mode-icon"><i class="fa-solid fa-cube"></i></div>
+        <div>
+          <div class="mode-title">LIVE MARKET</div>
+          <div class="mode-sub">1m - 15m</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-grid">
+      <div class="select-box">
+        <div style="font-size:9px; color:#64748b; font-weight:bold;">BROKER</div>
+        <select id="assetSelect">
+          <option value="AUD/NZD (OTC)">QUOTEX - AUD/NZD</option>
+          <option value="EUR/USD (OTC)">QUOTEX - EUR/USD</option>
+          <option value="GBP/USD (OTC)">QUOTEX - GBP/USD</option>
+          <option value="USD/JPY (OTC)">QUOTEX - USD/JPY</option>
+        </select>
+      </div>
+      <div class="status-item">
+        <div style="font-size:9px; color:#64748b; font-weight:bold;">STATUS</div>
+        <span><i class="fa-solid fa-circle" style="font-size:7px;"></i> Connected</span>
+        <div style="font-size:8px; color:#64748b;">Server: Amir-01</div>
+      </div>
+    </div>
+
+    <div class="engine-box">
+      <div class="engine-header">
+        <div class="engine-title"><i class="fa-solid fa-wave-square"></i> AI SIGNAL ENGINE</div>
+        <div class="uptime-badge">99.7% UPTIME</div>
+      </div>
+      <div style="font-size: 10px; color: #64748b;" id="scanStatus">Analyzing market data...</div>
+
+      <div class="radar-circle" id="radarRing">
+        <i class="fa-solid fa-bolt thunder-icon"></i>
+        <div class="standby-text" id="radarText">STANDBY</div>
+        <div class="sub-start">Press START BOT to receive signals</div>
       </div>
 
-      <button id="scanBtn" class="btn" onclick="analyzeAndScan()">GET BINARY SIGNAL</button>
-
+      <div class="recent-win">
+        <span>🏆 Shazia #7365</span>
+        <span style="color:#00a3ff; font-weight:bold;" id="recentPair">GBP/USD</span>
+        <span class="win-green">WIN 94%</span>
+      </div>
     </div>
+
+    <button class="start-btn" id="startBtn" onclick="generateQuotexSignal()">START BOT</button>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><i class="fa-solid fa-border-all"></i><span>Dashboard</span></div>
+      <div class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i><span>History</span></div>
+      <div class="nav-item active"><i class="fa-solid fa-robot"></i><span>Bot</span></div>
+      <div class="nav-item"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></div>
+      <div class="nav-item"><i class="fa-solid fa-gear"></i><span>Settings</span></div>
+    </div>
+
   </div>
 
-  <!-- Signal Alert Pop-Up -->
-  <div id="signalModal" class="modal-overlay">
-    <div id="modalBox" class="modal-box">
-      <div style="font-size: 12px; color: #8a99ad;" id="modalPairInfo">EUR/USD - 1m</div>
-      <div id="modalDirection" class="signal-direction">CALL (UP) ⬆</div>
-
-      <div class="meta-info">
-        <div>ACCURACY: <span id="modalAccuracy" style="color:#00ffcc; font-weight:bold;">99%</span></div>
-        <div>EXECUTION TIME: <span id="modalTime" style="color:#fff; font-weight:bold;">--:--</span></div>
-      </div>
-
-      <button class="btn" onclick="closeModal()">OPEN QUOTEX & TRADE</button>
+  <div class="popup-overlay" id="signalPopup">
+    <div class="popup-card">
+      <div style="font-size: 11px; color: #64748b; font-weight: bold;" id="popAsset">AUD/NZD (OTC)</div>
+      <div id="popDirection" class="direction-badge" style="color: #22c55e;">CALL (UP) ⬆</div>
+      <div style="font-size: 12px; color: #fff; margin-bottom: 12px;">ACCURACY: <span style="color:#00a3ff; font-weight:bold;">95%</span> | TIMEFRAME: <span style="color:#00a3ff; font-weight:bold;">1M</span></div>
+      <button class="start-btn" onclick="closePopup()">OPEN QUOTEX & TRADE</button>
     </div>
   </div>
 
   <script>
-    function checkLicense() {
-      const key = document.getElementById('licenseKey').value.trim();
-      if (key === "AMIR-VIP-2026" || key === "ADMIN") {
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('botSection').style.display = 'flex';
-        updateChart();
-      } else {
-        document.getElementById('errorMsg').style.display = 'block';
-      }
+    let currentMode = 'OTC';
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('otcBtn').classList.toggle('active', mode === 'OTC');
+      document.getElementById('liveBtn').classList.toggle('active', mode === 'LIVE');
     }
 
-    // Embed Quotex Compatible Chart Analysis
-    function updateChart() {
-      const pair = document.getElementById('pairSelect').value;
-      const chartDiv = document.getElementById('chartWidget');
-      
-      chartDiv.innerHTML = `
-        <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=${pair}&interval=1&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=0a0f1d&theme=dark&style=1" 
-        style="width: 100%; height: 100%; border: none;"></iframe>
-      `;
-    }
+    function generateQuotexSignal() {
+      const radar = document.getElementById('radarRing');
+      const radarText = document.getElementById('radarText');
+      const scanStatus = document.getElementById('scanStatus');
+      const startBtn = document.getElementById('startBtn');
+      const selectedAsset = document.getElementById('assetSelect').value;
 
-    function analyzeAndScan() {
-      const pairSelect = document.getElementById('pairSelect');
-      const pair = pairSelect.options[pairSelect.selectedIndex].text;
-      const tf = document.getElementById('timeframeSelect').value;
-      const analysisText = document.getElementById('analysisText');
-      const scanBtn = document.getElementById('scanBtn');
-
-      scanBtn.disabled = true;
-      scanBtn.style.opacity = "0.5";
-      analysisText.innerText = "CHECKING RSI, MACD & EMA TRENDS...";
+      startBtn.disabled = true;
+      startBtn.style.opacity = '0.5';
+      radar.classList.add('scanning');
+      radarText.innerText = "SCANNING...";
+      scanStatus.innerText = "Checking RSI, Volatility & Quotex Order Book...";
 
       setTimeout(() => {
-        const isCall = Math.random() > 0.45;
-        analysisText.innerText = isCall ? "BULLISH BREAKOUT (BUY CALL)" : "BEARISH BREAKOUT (SELL PUT)";
-        
-        setTimeout(() => {
-          showSignalModal(pair, tf, isCall);
-          scanBtn.disabled = false;
-          scanBtn.style.opacity = "1";
-        }, 800);
-      }, 1200);
+        radar.classList.remove('scanning');
+        radarText.innerText = "STANDBY";
+        scanStatus.innerText = "Analyzing market data...";
+        startBtn.disabled = false;
+        startBtn.style.opacity = '1';
+
+        // Show Signal Popup
+        const isCall = Math.random() > 0.4;
+        document.getElementById('popAsset').innerText = selectedAsset;
+        const popDir = document.getElementById('popDirection');
+        if (isCall) {
+          popDir.innerText = "CALL (UP) ⬆";
+          popDir.style.color = "#22c55e";
+        } else {
+          popDir.innerText = "PUT (DOWN) ⬇";
+          popDir.style.color = "#ef4444";
+        }
+        document.getElementById('signalPopup').style.display = 'flex';
+      }, 2000);
     }
 
-    function showSignalModal(pair, tf, isCall) {
-      const modal = document.getElementById('signalModal');
-      const modalBox = document.getElementById('modalBox');
-      const modalDirection = document.getElementById('modalDirection');
-      const modalPairInfo = document.getElementById('modalPairInfo');
-      const modalTime = document.getElementById('modalTime');
-
-      const now = new Date();
-      const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-
-      modalPairInfo.innerText = `${pair} - [${tf}]`;
-      modalTime.innerText = timeStr;
-
-      if (isCall) {
-        modalBox.style.borderColor = "#00ffcc";
-        modalDirection.innerText = "UP (CALL) ⬆";
-        modalDirection.className = "signal-direction call-text";
-      } else {
-        modalBox.style.borderColor = "#ff4d4d";
-        modalDirection.innerText = "DOWN (PUT) ⬇";
-        modalDirection.className = "signal-direction put-text";
-      }
-
-      modal.style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById('signalModal').style.display = "none";
+    function closePopup() {
+      document.getElementById('signalPopup').style.display = 'none';
     }
   </script>
 
 </body>
-  </html>
-  
+</html>
