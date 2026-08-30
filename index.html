@@ -56,28 +56,28 @@
     .control-label { font-size: 9px; color: #00a3ff; font-weight: 800; text-transform: uppercase; }
     select { width: 100%; background: #0c1427; border: 1px solid #1e293b; color: #fff; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 600; outline: none; }
 
-    /* Custom Live Candlestick Chart Box */
+    /* REALTIME QUOTEX CANDLESTICK & SCANNER CHART CONTAINER */
     .chart-container {
       width: 100%;
-      height: 160px;
+      height: 170px;
       background: #050a14;
       border-radius: 12px;
       border: 1px solid rgba(0, 163, 255, 0.3);
       position: relative;
       overflow: hidden;
     }
-    .chart-title {
+    .chart-header {
       position: absolute;
       top: 6px;
       left: 10px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #00a3ff;
-      z-index: 2;
-      background: rgba(8, 13, 26, 0.8);
-      padding: 2px 6px;
-      border-radius: 4px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 5;
     }
+    .chart-title { font-size: 10px; font-weight: 700; color: #00a3ff; background: rgba(8, 13, 26, 0.8); padding: 2px 6px; border-radius: 4px; }
+    .live-price-tag { font-size: 10px; font-weight: 800; color: #22c55e; background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; padding: 2px 6px; border-radius: 4px; }
     canvas { display: block; width: 100%; height: 100%; }
 
     /* AI Engine */
@@ -111,6 +111,7 @@
 
   <div class="app-card">
     
+    <!-- VIP Auth Screen -->
     <div id="authScreen" class="auth-overlay">
       <div class="auth-title">AMIR FX VIP SYSTEM</div>
       <p style="font-size: 11px; color: #64748b;">Enter License Key to Access Bot</p>
@@ -119,6 +120,7 @@
       <div id="authErr" style="color:#ef4444; font-size:10px; display:none;">Invalid VIP Key! Access Denied.</div>
     </div>
 
+    <!-- Main Bot Screen -->
     <div id="botScreen" class="bot-main">
       <div class="profile-header">
         <div class="profile-info">
@@ -136,6 +138,7 @@
         <span>USD/PKR (OTC) <span class="win-green">WIN 95%</span></span>
       </div>
 
+      <!-- Market Mode Switcher -->
       <div class="market-modes">
         <div class="mode-btn active" id="otcBtn" onclick="switchMarket('OTC')">
           <div class="mode-icon"><i class="fa-solid fa-cube"></i></div>
@@ -153,6 +156,7 @@
         </div>
       </div>
 
+      <!-- Controls -->
       <div class="controls-box">
         <div class="control-group">
           <div class="control-label">SELECT QUOTEX ASSET / PAIR</div>
@@ -173,11 +177,16 @@
         </div>
       </div>
 
+      <!-- DYNAMIC LIVE CANDLESTICK & GREEN/RED ANALYSIS LINES CHART -->
       <div class="chart-container">
-        <div class="chart-title" id="chartLabel">EUR/USD (OTC) - LIVE 1S</div>
+        <div class="chart-header">
+          <div class="chart-title" id="chartLabel">EUR/USD (OTC)</div>
+          <div class="live-price-tag" id="livePriceVal">1.08542</div>
+        </div>
         <canvas id="liveCandleChart"></canvas>
       </div>
 
+      <!-- Engine -->
       <div class="engine-box">
         <div class="engine-header">
           <div class="engine-title"><i class="fa-solid fa-wave-square"></i> AI SIGNAL ENGINE</div>
@@ -206,6 +215,7 @@
 
   </div>
 
+  <!-- Signal Modal Output -->
   <div class="popup-overlay" id="signalPopup">
     <div class="popup-card">
       <div style="font-size: 11px; color: #64748b; font-weight: bold;" id="popAsset">EUR/USD (OTC)</div>
@@ -265,13 +275,17 @@
 
     function changeAssetChart() {
       const selected = document.getElementById('assetSelect').value;
-      document.getElementById('chartLabel').innerText = `${selected} - LIVE REALTIME`;
+      document.getElementById('chartLabel').innerText = `${selected}`;
       resetCandleData();
     }
 
-    /* REALTIME DYNAMIC CANDLESTICK CANVAS ENGINE */
+    /* REALTIME CANDLESTICK & ANALYSIS LINE ENGINE */
     let canvas, ctx;
     let candles = [];
+    let isAnalyzing = false;
+    let scanLineY = 0;
+    let scanDirection = 1;
+    let currentLivePrice = 1.08500;
 
     function initChartCanvas() {
       canvas = document.getElementById('liveCandleChart');
@@ -280,7 +294,7 @@
       canvas.height = canvas.parentElement.clientHeight;
 
       resetCandleData();
-      setInterval(updateRealtimeChart, 800);
+      setInterval(updateRealtimeChart, 400);
     }
 
     function resetCandleData() {
@@ -299,7 +313,11 @@
     function updateRealtimeChart() {
       if (!ctx) return;
       
-      // Add new live candle and shift
+      // Update Live Price tag
+      currentLivePrice += (Math.random() - 0.49) * 0.00012;
+      document.getElementById('livePriceVal').innerText = currentLivePrice.toFixed(5);
+
+      // Shift candles
       let lastCandle = candles[candles.length - 1];
       let open = lastCandle.close;
       let close = open + (Math.random() - 0.49) * 5;
@@ -309,10 +327,10 @@
       candles.shift();
       candles.push({ open, close, high, low });
 
-      // Draw Chart
+      // Clear Canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Grid Lines
+      // Background Grid
       ctx.strokeStyle = "rgba(0, 163, 255, 0.06)";
       ctx.lineWidth = 1;
       for (let y = 20; y < canvas.height; y += 30) {
@@ -325,18 +343,22 @@
       let minP = Math.min(...candles.map(c => c.low));
       let maxP = Math.max(...candles.map(c => c.high));
       let candleWidth = canvas.width / candles.length;
+      let lastYClose = 0;
 
+      // Draw Candlesticks
       candles.forEach((c, index) => {
         let x = index * candleWidth + candleWidth / 2;
-        let yOpen = canvas.height - ((c.open - minP) / (maxP - minP)) * (canvas.height - 30) - 15;
-        let yClose = canvas.height - ((c.close - minP) / (maxP - minP)) * (canvas.height - 30) - 15;
-        let yHigh = canvas.height - ((c.high - minP) / (maxP - minP)) * (canvas.height - 30) - 15;
-        let yLow = canvas.height - ((c.low - minP) / (maxP - minP)) * (canvas.height - 30) - 15;
+        let yOpen = canvas.height - ((c.open - minP) / (maxP - minP)) * (canvas.height - 40) - 20;
+        let yClose = canvas.height - ((c.close - minP) / (maxP - minP)) * (canvas.height - 40) - 20;
+        let yHigh = canvas.height - ((c.high - minP) / (maxP - minP)) * (canvas.height - 40) - 20;
+        let yLow = canvas.height - ((c.low - minP) / (maxP - minP)) * (canvas.height - 40) - 20;
+
+        if (index === candles.length - 1) lastYClose = yClose;
 
         let isGreen = c.close >= c.open;
         let color = isGreen ? "#22c55e" : "#ef4444";
 
-        // Wick Line
+        // Wick
         ctx.strokeStyle = color;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -350,9 +372,51 @@
         let yBody = Math.min(yOpen, yClose);
         ctx.fillRect(x - candleWidth / 3, yBody, (candleWidth / 3) * 2, bodyHeight);
       });
+
+      // Horizontal Realtime Price Line (Moving Up/Down)
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, lastYClose);
+      ctx.lineTo(canvas.width, lastYClose);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset line dash
+
+      // 10s ANALYSIS MOVING GREEN & RED HORIZONTAL LINES
+      if (isAnalyzing) {
+        scanLineY += scanDirection * 4;
+        if (scanLineY > canvas.height - 10 || scanLineY < 20) {
+          scanDirection *= -1;
+        }
+
+        // Green Resistance Scanner Line
+        ctx.strokeStyle = "#22c55e";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#22c55e";
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(0, scanLineY);
+        ctx.lineTo(canvas.width, scanLineY);
+        ctx.stroke();
+
+        // Red Support Scanner Line (Opposite Motion)
+        let redY = canvas.height - scanLineY;
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#ef4444";
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(0, redY);
+        ctx.lineTo(canvas.width, redY);
+        ctx.stroke();
+
+        // Reset Glow
+        ctx.shadowBlur = 0;
+      }
     }
 
-    // 10 Seconds Analysis Timer
+    // 10 Seconds Analysis Timer Logic
     function start10SecAnalysis() {
       const radar = document.getElementById('radarRing');
       const radarText = document.getElementById('radarText');
@@ -367,6 +431,7 @@
 
       startBtn.disabled = true;
       startBtn.style.opacity = '0.5';
+      isAnalyzing = true; // Trigger Chart Moving Lines Analysis Visual
       
       radar.classList.add('scanning');
       thunderIcon.style.display = 'none';
@@ -376,50 +441,19 @@
 
       let timeLeft = 10;
       timerNum.innerText = timeLeft + "s";
-      scanStatus.innerText = `Analyzing real-time candle momentum for ${selectedAsset}...`;
+      scanStatus.innerText = `Analyzing candles & price action for ${selectedAsset}...`;
 
       const countdown = setInterval(() => {
         timeLeft--;
         timerNum.innerText = timeLeft + "s";
 
         if (timeLeft === 5) {
-          scanStatus.innerText = "Calculating market volatility & RSI momentum...";
+          scanStatus.innerText = "Scanning Resistance & Support Lines...";
         }
 
         if (timeLeft <= 0) {
           clearInterval(countdown);
+          isAnalyzing = false; // Stop analysis visual lines
           
           radar.classList.remove('scanning');
-          timerNum.style.display = 'none';
-          thunderIcon.style.display = 'block';
-          radarText.innerText = "STANDBY";
-          radarSub.innerText = "Press START BOT";
-          scanStatus.innerText = "Analysis Complete!";
-          startBtn.disabled = false;
-          startBtn.style.opacity = '1';
-
-          const isCall = Math.random() > 0.45;
-          document.getElementById('popAsset').innerText = selectedAsset;
-          document.getElementById('popTimeframe').innerText = selectedTf.toUpperCase();
-
-          const popDir = document.getElementById('popDirection');
-          if (isCall) {
-            popDir.innerText = "CALL (UP) ⬆";
-            popDir.style.color = "#22c55e";
-          } else {
-            popDir.innerText = "PUT (DOWN) ⬇";
-            popDir.style.color = "#ef4444";
-          }
-          document.getElementById('signalPopup').style.display = 'flex';
-        }
-      }, 1000);
-    }
-
-    function closePopup() {
-      document.getElementById('signalPopup').style.display = 'none';
-    }
-  </script>
-
-</body>
-                                                                                                                                                         </html>
-
+          timerNum.style.display
