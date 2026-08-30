@@ -23,14 +23,8 @@
       gap: 12px;
     }
 
-    /* License Lock Screen */
-    .auth-overlay { display: flex; flex-direction: column; gap: 14px; text-align: center; padding: 10px 5px; }
-    .auth-title { font-size: 18px; font-weight: 800; color: #00a3ff; letter-spacing: 0.5px; }
-    .auth-input { width: 100%; padding: 12px; background: #0c1427; border: 1px solid #1e293b; border-radius: 10px; color: #fff; text-align: center; font-size: 13px; font-weight: bold; outline: none; }
-    .auth-input:focus { border-color: #00a3ff; }
-
     /* Main Bot Section */
-    .bot-main { display: none; flex-direction: column; gap: 12px; }
+    .bot-main { display: flex; flex-direction: column; gap: 12px; }
 
     /* Header Profile */
     .profile-header { display: flex; align-items: center; justify-content: space-between; }
@@ -111,15 +105,6 @@
 
   <div class="app-card">
     
-    <!-- VIP Auth Screen -->
-    <div id="authScreen" class="auth-overlay">
-      <div class="auth-title">AMIR FX VIP SYSTEM</div>
-      <p style="font-size: 11px; color: #64748b;">Enter License Key to Access Bot</p>
-      <input type="password" id="passInput" class="auth-input" placeholder="ENTER VIP KEY">
-      <button class="start-btn" onclick="verifyKey()">ACCESS BOT</button>
-      <div id="authErr" style="color:#ef4444; font-size:10px; display:none;">Invalid VIP Key! Access Denied.</div>
-    </div>
-
     <!-- Main Bot Screen -->
     <div id="botScreen" class="bot-main">
       <div class="profile-header">
@@ -226,17 +211,11 @@
   </div>
 
   <script>
-    function verifyKey() {
-      const input = document.getElementById('passInput').value.trim();
-      if (input === ) {
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('botScreen').style.display = 'flex';
-        loadPairs('OTC');
-        initChartCanvas();
-      } else {
-        document.getElementById('authErr').style.display = 'block';
-      }
-    }
+    // Direct Initialization without Password Lock Screen
+    window.onload = function() {
+      loadPairs('OTC');
+      initChartCanvas();
+    };
 
     const otcPairs = [
       "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/NZD (OTC)", 
@@ -381,7 +360,7 @@
       ctx.moveTo(0, lastYClose);
       ctx.lineTo(canvas.width, lastYClose);
       ctx.stroke();
-      ctx.setLineDash([]); // Reset line dash
+      ctx.setLineDash([]);
 
       // 10s ANALYSIS MOVING GREEN & RED HORIZONTAL LINES
       if (isAnalyzing) {
@@ -456,4 +435,36 @@
           isAnalyzing = false; // Stop analysis visual lines
           
           radar.classList.remove('scanning');
-          timerNum.style.display
+          timerNum.style.display = 'none';
+          thunderIcon.style.display = 'block';
+          radarText.innerText = "STANDBY";
+          radarSub.innerText = "Press START BOT";
+          scanStatus.innerText = "Analysis Complete!";
+          startBtn.disabled = false;
+          startBtn.style.opacity = '1';
+
+          const isCall = Math.random() > 0.45;
+          document.getElementById('popAsset').innerText = selectedAsset;
+          document.getElementById('popTimeframe').innerText = selectedTf.toUpperCase();
+
+          const popDir = document.getElementById('popDirection');
+          if (isCall) {
+            popDir.innerText = "CALL (UP) ⬆";
+            popDir.style.color = "#22c55e";
+          } else {
+            popDir.innerText = "PUT (DOWN) ⬇";
+            popDir.style.color = "#ef4444";
+          }
+          document.getElementById('signalPopup').style.display = 'flex';
+        }
+      }, 1000);
+    }
+
+    function closePopup() {
+      document.getElementById('signalPopup').style.display = 'none';
+    }
+  </script>
+
+</body>
+  </html>
+  
