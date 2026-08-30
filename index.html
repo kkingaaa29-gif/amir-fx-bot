@@ -1,1 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI FX Trading Bot Dashboard</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #131a2a;
+            --accent-blue: #0088ff;
+            --neon-cyan: #00f2fe;
+            --green-win: #00e676;
+            --red-loss: #ff1744;
+            --text-main: #ffffff;
+            --text-sub: #8a99ad;
+            --border-color: #1f2b42;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Top Header Navigation */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: #080b12;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-section i {
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+        }
+
+        .logo-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--green-win);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--green-win);
+        }
+
+        /* Split Screen Container */
+        .main-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            height: calc(100vh - 60px);
+        }
+
+        .chart-section {
+            flex: 1 1 50%;
+            min-width: 320px;
+            background: #000000;
+            border-right: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .dashboard-section {
+            flex: 1 1 50%;
+            min-width: 320px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Card Component Styling */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        .input-group select {
+            background: #090d16;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #0088ff, #00f2fe);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .status-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+        }
+
+        .status-item span.active {
+            color: var(--green-win);
+            font-weight: 600;
+        }
+
+        .signals-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .signals-table th, .signals-table td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .badge-up { color: var(--green-win); font-weight: bold; }
+        .badge-down { color: var(--red-loss); font-weight: bold; }
+
+        /* Signal Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .signal-modal {
+            background: var(--card-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 350px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+
+        .btn-modal {
+            background: var(--neon-cyan);
+            color: #000000;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hidden License Gate Protection -->
+    <div id="license-overlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background:#0b0f19; z-index:9999; display:flex; justify-content:center; align-items:center;">
+        <div style="background:#131a2a; border:1px solid #00f2fe; padding:30px; border-radius:15px; text-align:center; max-width:350px; width:90%; box-shadow:0 0 25px rgba(0,242,254,0.2);">
+            <i class="fa-solid fa-key" style="font-size:2.5rem; color:#00f2fe; margin-bottom:15px;"></i>
+            <h2 style="color:#fff; font-size:1.2rem; margin-bottom:10px;">ENTER LICENSE KEY</h2>
+            <p style="color:#8a99ad; font-size:0.8rem; margin-bottom:20px;">Please enter your valid key to access the AI FX Dashboard.</p>
+            
+            <input type="text" id="license-key-input" placeholder="e.g. AMIRFX-8899-VIP" style="width:100%; padding:10px; margin-bottom:15px; background:#090d16; border:1px solid #1f2b42; color:#fff; border-radius:6px; outline:none; text-align:center; font-weight:bold;">
+            
+            <button onclick="verifyLicense()" style="width:100%; padding:10px; background:linear-gradient(90deg, #0088ff, #00f2fe); border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer;">VERIFY & ACCESS</button>
+            
+            <div id="license-error" style="color:#ff1744; font-size:0.8rem; margin-top:10px; display:none;">Invalid or Expired License Key!</div>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header>
+        <div class="logo-section">
+            <i class="fa-solid fa-robot"></i>
+            <span class="logo-title">AI BOT ENGINE</span>
+        </div>
+        <div class="status-badge">
+            <i class="fa-solid fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i> SYSTEM ONLINE
+        </div>
+    </header>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="chart-section">
+            <iframe class="chart-placeholder" src="https://quotex.com" title="Broker Trading View"></iframe>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><i class="fa-solid fa-sliders"></i> AI Signal Engine</span>
+                    <span style="font-size: 0.75rem; color: var(--text-sub);">Version 2.4</span>
+                </div>
+                <div class="control-grid">
+                    <div class="input-group">
+                        <label for="market-type">Market Mode</label>
+                        <select id="market-type">
+                            <option value="otc">OTC Market</option>
+                            <option value="live">Live Market</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="pair-select">Trading Pair</label>
+                        <select id="pair-select">
+                            <option value="AUDCAD_OTC">AUD/CAD (OTC)</option>
+                            <option value="EURUSD_OTC">EUR/USD (OTC)</option>
+                            <option value="USDINR_OTC">USD/INR (OTC)</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="timeframe">Timeframe</label>
+                        <select id="timeframe">
+                            <option value="5s">5 Seconds</option>
+                            <option value="15s">15 Seconds</option>
+                            <option value="1m">1 Minute</option>
+                            <option value="5m">5 Minutes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-start" onclick="toggleBot()">
+                    <i class="fa-solid fa-bolt"></i> START BOT
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><i class="fa-solid fa-microchip"></i> Strategies In Use</span>
+                </div>
+                <ul class="status-list">
+                    <li class="status-item"><span>RSI Crossover</span><span class="active">MATCHED</span></li>
+                    <li class="status-item"><span>EMA 200 & EMA 8 Trend</span><span class="active">CONFIRMED</span></li>
+                    <li class="status-item"><span>Support & Resistance</span><span class="active">CONFIRMED</span></li>
+                    <li class="status-item"><span>Volume Analyzer</span><span class="active">MATCHED</span></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><i class="fa-solid fa-list-check"></i> Recent Signals</span>
+                </div>
+                <table class="signals-table">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Signal</th>
+                            <th>Accuracy</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signal-history">
+                        <tr>
+                            <td>AUD/CAD</td>
+                            <td class="badge-up">CALL ▲</td>
+                            <td>95%</td>
+                            <td style="color: var(--green-win);">WIN</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Signal Alert Modal -->
+    <div class="modal-overlay" id="signal-modal">
+        <div class="signal-modal">
+            <div id="modal-pair" style="font-size: 1.2rem; color: var(--text-sub);">AUD/CAD (OTC)</div>
+            <div style="font-size: 0.8rem; color: var(--text-sub);">AI SIGNAL GENERATED</div>
+            <div class="direction badge-up" id="modal-direction" style="font-size:2rem; margin:10px 0;">▲ CALL (UP)</div>
+            <div style="font-size: 0.9rem;">Accuracy: <strong style="color: var(--green-win);" id="modal-accuracy">95%</strong></div>
+            <div id="modal-timer" style="font-size:2.5rem; font-weight:bold; color:var(--neon-cyan); margin:10px 0;">5</div>
+            <button class="btn-modal" onclick="closeModal()">GOT IT</button>
+        </div>
+    </div>
+
+    <!-- Embedded Script Logic -->
+    <script src="script.js"></script>
+</body>
+          </html>
 
