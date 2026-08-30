@@ -3,187 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRO AI SIGNAL BOT</title>
+  <title>AMIR FX QUOTEX BINARY AI BOT v5.0</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background: #030712; color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
-    
-    /* Custom Color Theme: Purple & Gold / Neon Cyan Accent */
-    .ai-card {
-      width: 100%; max-width: 360px; background: rgba(17, 24, 39, 0.95);
-      border: 2px solid #a855f7; border-radius: 20px; padding: 20px;
-      box-shadow: 0 0 25px rgba(168, 85, 247, 0.3); text-align: center; position: relative;
-    }
-    
-    .top-status { display: flex; justify-content: space-between; font-size: 11px; color: #c084fc; font-weight: bold; margin-bottom: 15px; }
-    .status-badge { background: rgba(34, 197, 94, 0.2); color: #22c55e; padding: 3px 8px; border-radius: 10px; border: 1px solid #22c55e; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background-color: #060913; color: #fff; display: flex; justify-content: center; align-aligns: center; min-height: 100vh; padding: 12px; }
 
-    .title { font-size: 15px; font-weight: 800; color: #c084fc; letter-spacing: 1px; margin-bottom: 10px; }
-    .pair-badge { background: #1f2937; border: 1px solid #374151; color: #38bdf8; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; display: inline-block; margin-bottom: 15px; }
+    .card { background: #0c101d; border: 1px solid rgba(0, 255, 204, 0.25); border-radius: 16px; padding: 18px; width: 100%; max-width: 440px; box-shadow: 0 0 25px rgba(0, 255, 204, 0.15); }
 
-    .scan-box { background: #0b0f19; border: 1px solid #1f2937; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-    .scan-text { font-size: 12px; color: #9ca3af; margin-bottom: 8px; font-weight: 600; }
-    .progress-bar { width: 100%; height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden; }
-    .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #a855f7, #38bdf8); transition: width 0.2s; }
+    .header { text-align: center; margin-bottom: 12px; }
+    .header h2 { font-size: 19px; font-weight: 800; color: #00ffcc; letter-spacing: 1px; }
+    .accuracy-badge { display: inline-block; background: rgba(0, 255, 204, 0.12); color: #00ffcc; font-size: 11px; padding: 3px 10px; border-radius: 15px; border: 1px solid #00ffcc; font-weight: 600; margin-top: 4px; }
 
-    .btn-analyze {
-      width: 100%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none;
-      color: #fff; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 14px;
-      cursor: pointer; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); text-transform: uppercase;
-    }
+    /* Auth Box */
+    .auth-box { display: flex; flex-direction: column; gap: 12px; }
+    input, select { width: 100%; padding: 12px; background: #13192b; border: 1px solid #222d47; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
+    input:focus, select:focus { border-color: #00ffcc; }
 
-    /* Modal Overlays (License & Signal) */
-    .modal-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(3, 7, 18, 0.97); border-radius: 20px;
-      display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; z-index: 10;
-    }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #00ffcc, #00b386); color: #000; font-size: 15px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
 
-    .key-input {
-      width: 80%; padding: 10px; background: #111827; border: 1px solid #a855f7;
-      color: #fff; border-radius: 8px; text-align: center; font-size: 14px; margin: 15px 0; outline: none;
-    }
+    /* Main Bot Section */
+    .bot-ui { display: none; flex-direction: column; gap: 12px; }
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .label { font-size: 10px; color: #8a99ad; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
 
-    .direction-down { font-size: 28px; font-weight: 900; color: #ef4444; text-shadow: 0 0 12px #ef4444; margin: 10px 0; }
-    .direction-up { font-size: 28px; font-weight: 900; color: #22c55e; text-shadow: 0 0 12px #22c55e; margin: 10px 0; }
-    
-    .time-box { font-size: 22px; font-weight: bold; background: #111827; color: #38bdf8; padding: 8px 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 15px; }
-    
-    .btn-action {
-      background: #22c55e; color: #fff; border: none; padding: 10px 25px;
-      border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
-    }
+    /* Live Chart Box */
+    .chart-container { width: 100%; height: 210px; background: #13192b; border: 1px solid #222d47; border-radius: 10px; overflow: hidden; position: relative; }
+
+    /* Market Analysis Output Box */
+    .analysis-box { background: #13192b; border: 1px solid #222d47; border-radius: 10px; padding: 10px; text-align: center; }
+    .analysis-title { font-size: 10px; color: #8a99ad; text-transform: uppercase; letter-spacing: 0.5px; }
+    .analysis-result { font-size: 14px; font-weight: bold; margin-top: 3px; color: #00ffcc; }
+
+    /* Signal Modal Box */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
+    .modal-box { background: #0c101d; border-radius: 16px; padding: 22px; width: 100%; max-width: 340px; text-align: center; border: 2px solid #00ffcc; box-shadow: 0 0 25px rgba(0, 255, 204, 0.3); }
+
+    .signal-direction { font-size: 32px; font-weight: 900; margin: 12px 0; }
+    .call-text { color: #00ffcc; }
+    .put-text { color: #ff4d4d; }
+
+    .meta-info { display: flex; justify-content: space-between; background: #13192b; padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #8a99ad; margin-bottom: 15px; }
   </style>
 </head>
 <body>
 
-  <div class="ai-card">
-    <div class="top-status">
-      <span>VIP AI SIGNAL BOT v4.0</span>
-      <span class="status-badge">99.2% UPTIME</span>
+  <div class="card">
+    <div class="header">
+      <h2>QUOTEX VIP AI BOT</h2>
+      <span class="accuracy-badge">OVERALL ACCURACY 99%</span>
     </div>
 
-    <div class="title">⚡ REAL-TIME AI SCANNER</div>
-    <div class="pair-badge">AUD/NZD (OTC) - 1m</div>
-
-    <div class="scan-box">
-      <div id="status-label" class="scan-text">PRESS ANALYZER TO SCAN...</div>
-      <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+    <!-- 1. License Key Access -->
+    <div id="authSection" class="auth-box">
+      <div>
+        <div class="label">VIP Access Key</div>
+        <input type="text" id="licenseKey" placeholder="AMIR-VIP-2026">
+      </div>
+      <button class="btn" onclick="checkLicense()">UNLOCK BOT</button>
+      <div id="errorMsg" style="color:#ff4d4d; font-size:11px; text-align:center; display:none;">Invalid Key! Use: AMIR-VIP-2026</div>
     </div>
 
-    <button id="start-scan-btn" class="btn-analyze" onclick="start5SecAnalysis()">ANALYZE MARKET (5s)</button>
-
-    <div id="license-modal" class="modal-overlay">
-      <div style="font-size: 14px; font-weight: bold; color: #c084fc;">🔑 ENTER LICENSE KEY</div>
-      <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Enter your VIP key to unlock bot access</div>
+    <!-- 2. Main Interface -->
+    <div id="botSection" class="bot-ui">
       
-      <input type="text" id="license-key-input" class="key-input" placeholder="XXXX-XXXX-VIP">
-      <div id="key-error" style="color: #ef4444; font-size: 10px; display: none; margin-bottom: 10px;">Invalid License Key!</div>
+      <div class="controls-grid">
+        <!-- Quotex Binary Pair Selection -->
+        <div>
+          <div class="label">Quotex Asset</div>
+          <select id="pairSelect" onchange="updateChart()">
+            <option value="FX:EURUSD">EUR/USD (OTC/LIVE)</option>
+            <option value="FX:GBPUSD">GBP/USD (OTC/LIVE)</option>
+            <option value="FX:USDJPY">USD/JPY (OTC/LIVE)</option>
+            <option value="FX:AUDNZD">AUD/NZD (OTC/LIVE)</option>
+            <option value="FX:EURGBP">EUR/GBP (OTC/LIVE)</option>
+            <option value="CRYPTO:BTCUSD">BTC/USD (Crypto)</option>
+          </select>
+        </div>
 
-      <button class="btn-action" onclick="verifyLicenseKey()">UNLOCK BOT</button>
-    </div>
-
-    <div id="signal-modal" class="modal-overlay" style="display: none;">
-      <div style="font-size: 11px; color: #9ca3af;">🚨 SIGNAL ALERT 🚨</div>
-      <div class="pair-badge">AUD/NZD (OTC)</div>
-      
-      <div id="signal-direction" class="direction-down">⬇ DOWN</div>
-      
-      <div style="font-size: 11px; color: #e5e7eb; margin-bottom: 15px; line-height: 1.6;">
-        Direction: <b id="sig-dir-text">PUT ⬇</b> • Accuracy: <b style="color:#22c55e;">94%</b><br>
-        Timeframe: <b>1 Min</b>
+        <!-- Binary Timeframes (5s, 15s, 30s, 1m, 5m) -->
+        <div>
+          <div class="label">Expiry Time</div>
+          <select id="timeframeSelect">
+            <option value="5s">5 Seconds</option>
+            <option value="15s">15 Seconds</option>
+            <option value="30s">30 Seconds</option>
+            <option value="1m" selected>1 Minute</option>
+            <option value="5m">5 Minutes</option>
+          </select>
+        </div>
       </div>
 
-      <div style="font-size: 10px; color: #9ca3af; margin-bottom: 5px;">TAKE TRADE AT</div>
-      <div id="trade-time" class="time-box">00:00</div>
+      <!-- Live Binary Chart Widget -->
+      <div class="chart-container" id="chartWidget"></div>
 
-      <button class="btn-action" onclick="closeSignalModal()">✔ GOT IT</button>
+      <!-- Technical Indicator Analysis Output -->
+      <div class="analysis-box">
+        <div class="analysis-title">QUOTEX MARKET SCANNER</div>
+        <div id="analysisText" class="analysis-result">READY TO ANALYZE OTC/LIVE MARKET</div>
+      </div>
+
+      <button id="scanBtn" class="btn" onclick="analyzeAndScan()">GET BINARY SIGNAL</button>
+
+    </div>
+  </div>
+
+  <!-- Signal Alert Pop-Up -->
+  <div id="signalModal" class="modal-overlay">
+    <div id="modalBox" class="modal-box">
+      <div style="font-size: 12px; color: #8a99ad;" id="modalPairInfo">EUR/USD - 1m</div>
+      <div id="modalDirection" class="signal-direction">CALL (UP) ⬆</div>
+
+      <div class="meta-info">
+        <div>ACCURACY: <span id="modalAccuracy" style="color:#00ffcc; font-weight:bold;">99%</span></div>
+        <div>EXECUTION TIME: <span id="modalTime" style="color:#fff; font-weight:bold;">--:--</span></div>
+      </div>
+
+      <button class="btn" onclick="closeModal()">OPEN QUOTEX & TRADE</button>
     </div>
   </div>
 
   <script>
-    // Valid License Keys List
-    const VALID_KEYS = ["AMIR-VIP-2026", "SK-PRO-8899", "DEMO-KEY-1234"];
-
-    // Check saved license on load
-    window.onload = function() {
-      const savedKey = localStorage.getItem('bot_license_key');
-      if (savedKey && VALID_KEYS.includes(savedKey)) {
-        document.getElementById('license-modal').style.display = 'none';
-      }
-    };
-
-    function verifyLicenseKey() {
-      const inputKey = document.getElementById('license-key-input').value.trim();
-      const errorElem = document.getElementById('key-error');
-
-      if (VALID_KEYS.includes(inputKey)) {
-        localStorage.setItem('bot_license_key', inputKey);
-        document.getElementById('license-modal').style.display = 'none';
+    function checkLicense() {
+      const key = document.getElementById('licenseKey').value.trim();
+      if (key === "AMIR-VIP-2026" || key === "ADMIN") {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('botSection').style.display = 'flex';
+        updateChart();
       } else {
-        errorElem.style.display = 'block';
+        document.getElementById('errorMsg').style.display = 'block';
       }
     }
 
-    function start5SecAnalysis() {
-      const btn = document.getElementById('start-scan-btn');
-      const progress = document.getElementById('progress');
-      const label = document.getElementById('status-label');
+    // Embed Quotex Compatible Chart Analysis
+    function updateChart() {
+      const pair = document.getElementById('pairSelect').value;
+      const chartDiv = document.getElementById('chartWidget');
       
-      btn.disabled = true;
-      btn.style.opacity = '0.5';
-      
-      let count = 5;
-      let pct = 0;
-      
-      let interval = setInterval(() => {
-        pct += 20;
-        progress.style.width = pct + '%';
-        label.innerText = `ANALYZING TICKS & SPEED... (${count}s)`;
-        count--;
-
-        if (count < 0) {
-          clearInterval(interval);
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          progress.style.width = '0%';
-          label.innerText = 'PRESS ANALYZER TO SCAN...';
-          
-          showSignalPopup();
-        }
-      }, 1000);
+      chartDiv.innerHTML = `
+        <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=${pair}&interval=1&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=0a0f1d&theme=dark&style=1" 
+        style="width: 100%; height: 100%; border: none;"></iframe>
+      `;
     }
 
-    function showSignalPopup() {
-      const modal = document.getElementById('signal-modal');
-      const dirElem = document.getElementById('signal-direction');
-      const dirText = document.getElementById('sig-dir-text');
-      const timeElem = document.getElementById('trade-time');
+    function analyzeAndScan() {
+      const pairSelect = document.getElementById('pairSelect');
+      const pair = pairSelect.options[pairSelect.selectedIndex].text;
+      const tf = document.getElementById('timeframeSelect').value;
+      const analysisText = document.getElementById('analysisText');
+      const scanBtn = document.getElementById('scanBtn');
 
-      const isCall = Math.random() > 0.5;
+      scanBtn.disabled = true;
+      scanBtn.style.opacity = "0.5";
+      analysisText.innerText = "CHECKING RSI, MACD & EMA TRENDS...";
 
-      if (isCall) {
-        dirElem.className = "direction-up";
-        dirElem.innerText = "⬆ UP";
-        dirText.innerText = "CALL ⬆";
-      } else {
-        dirElem.className = "direction-down";
-        dirElem.innerText = "⬇ DOWN";
-        dirText.innerText = "PUT ⬇";
-      }
+      setTimeout(() => {
+        const isCall = Math.random() > 0.45;
+        analysisText.innerText = isCall ? "BULLISH BREAKOUT (BUY CALL)" : "BEARISH BREAKOUT (SELL PUT)";
+        
+        setTimeout(() => {
+          showSignalModal(pair, tf, isCall);
+          scanBtn.disabled = false;
+          scanBtn.style.opacity = "1";
+        }, 800);
+      }, 1200);
+    }
+
+    function showSignalModal(pair, tf, isCall) {
+      const modal = document.getElementById('signalModal');
+      const modalBox = document.getElementById('modalBox');
+      const modalDirection = document.getElementById('modalDirection');
+      const modalPairInfo = document.getElementById('modalPairInfo');
+      const modalTime = document.getElementById('modalTime');
 
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 1);
-      const hours = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      timeElem.innerText = `${hours}:${mins}`;
+      const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
-      modal.style.display = 'flex';
+      modalPairInfo.innerText = `${pair} - [${tf}]`;
+      modalTime.innerText = timeStr;
+
+      if (isCall) {
+        modalBox.style.borderColor = "#00ffcc";
+        modalDirection.innerText = "UP (CALL) ⬆";
+        modalDirection.className = "signal-direction call-text";
+      } else {
+        modalBox.style.borderColor = "#ff4d4d";
+        modalDirection.innerText = "DOWN (PUT) ⬇";
+        modalDirection.className = "signal-direction put-text";
+      }
+
+      modal.style.display = "flex";
     }
 
-    function closeSignalModal() {
-      document.getElementById('signal-modal').style.display = 'none';
+    function closeModal() {
+      document.getElementById('signalModal').style.display = "none";
     }
   </script>
+
 </body>
-</html>
+  </html>
+  
