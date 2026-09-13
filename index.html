@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AMIR FX AI BOT - QUOTEX ALL PAIRS</title>
+    <title>AMIR FX AI BOT - QUOTEX ALL PAIRS & TIMEFRAMES</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -54,13 +54,14 @@
         .pairs-section { background: var(--card-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px; }
         .search-input { width: 100%; padding: 10px 12px; background: #0a0a0f; border: 1px solid var(--card-border); border-radius: 8px; color: #fff; margin-bottom: 12px; outline: none; font-size: 0.8rem; }
 
-        .pairs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+        .pairs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
         .pair-item { background: #0a0a0f; border: 1px solid var(--card-border); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .pair-item.active { border-color: var(--accent-red); color: var(--accent-red); }
 
-        .tf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
-        .tf-chip { background: #0a0a0f; border: 1px solid var(--card-border); padding: 8px 0; border-radius: 6px; color: #fff; font-size: 0.75rem; cursor: pointer; text-align: center; }
-        .tf-chip.active { background: var(--accent-red); border-color: var(--accent-red); }
+        .tf-header { display: flex; justify-content: space-between; align-items: center; margin: 15px 0 8px; }
+        .tf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .tf-chip { background: #0a0a0f; border: 1px solid var(--card-border); padding: 10px 0; border-radius: 8px; color: #fff; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .tf-chip.active { background: var(--accent-red); border-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red-glow); }
 
         #signal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; display: none; justify-content: center; align-items: center; padding: 20px; }
         .signal-modal { background: #0d1210; border: 1px solid var(--accent-green); border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 0 30px var(--accent-green-glow); }
@@ -137,13 +138,17 @@
         <div class="pairs-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <div style="font-size: 0.8rem; font-weight: 700;">SELECT PAIR</div>
-                <div style="font-size: 0.7rem; color: var(--text-dim);"><span id="pairs-count">39</span>/39</div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);"><span id="pairs-count">34</span>/34</div>
             </div>
-            <input type="text" id="search-box" class="search-input" placeholder="Search OTC / Live pairs..." oninput="filterPairs()">
+            <input type="text" id="search-box" class="search-input" placeholder="Search OTC pairs..." oninput="filterPairs()">
             
             <div class="pairs-grid" id="pairs-container"></div>
 
-            <div style="font-size: 0.8rem; font-weight: 700; margin: 12px 0 6px;">TIMEFRAME</div>
+            <div class="tf-header">
+                <div style="font-size: 0.8rem; font-weight: 700;">TIMEFRAME</div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">Expiry</div>
+            </div>
+            
             <div class="tf-grid">
                 <div class="tf-chip" onclick="pickTF(this, '5s')">5s</div>
                 <div class="tf-chip active" onclick="pickTF(this, '10s')">10s</div>
@@ -153,6 +158,9 @@
                 <div class="tf-chip" onclick="pickTF(this, '2m')">2m</div>
                 <div class="tf-chip" onclick="pickTF(this, '3m')">3m</div>
                 <div class="tf-chip" onclick="pickTF(this, '5m')">5m</div>
+                <div class="tf-chip" onclick="pickTF(this, '10m')">10m</div>
+                <div class="tf-chip" onclick="pickTF(this, '15m')">15m</div>
+                <div class="tf-chip" onclick="pickTF(this, '30m')">30m</div>
             </div>
         </div>
 
@@ -183,6 +191,9 @@
 
     <script>
         const SECRET_KEY = "SAWAMKHANYT12";
+        // BACkEND SERVER URL (Ye URL aapko Render/Railway server hosting se milegi)
+        const BACKEND_API_URL = "https://your-backend-server.onrender.com"; 
+
         let activeMarket = "OTC";
         let activePair = "AUD/USD";
         let activeTF = "10s";
@@ -200,7 +211,7 @@
             { name: "AUD/CAD", otc: true, payout: 88 },
             { name: "GBP/CAD", otc: true, payout: 94 },
             { name: "USD/ARS", otc: true, payout: 85 },
-            { name: "USD/CAD", otc: true, payout: 87 },
+            { name: "USD/NZD", otc: true, payout: 87 },
             { name: "AUD/NZD", otc: true, payout: 85 },
             { name: "GBP/NZD", otc: true, payout: 91 },
             { name: "CAD/JPY", otc: true, payout: 88 },
@@ -222,11 +233,10 @@
             { name: "AUD/CHF", otc: true, payout: 87 },
             { name: "CAD/CHF", otc: true, payout: 84 },
             { name: "CHF/JPY", otc: true, payout: 90 },
-            { name: "EURAUD", otc: false, payout: 82 },
-            { name: "EURUSD", otc: false, payout: 85 },
-            { name: "GBPUSD", otc: false, payout: 80 },
-            { name: "USDJPY", otc: false, payout: 83 },
-            { name: "BTC/USD", otc: false, payout: 90 }
+            { name: "EUR/USD (Live)", otc: false, payout: 85 },
+            { name: "GBP/USD (Live)", otc: false, payout: 80 },
+            { name: "USD/JPY (Live)", otc: false, payout: 83 },
+            { name: "BTC/USD (Crypto)", otc: false, payout: 90 }
         ];
 
         window.onload = function() {
@@ -295,53 +305,35 @@
             document.getElementById('sel-tf-display').innerText = tfValue;
         }
 
-        function triggerBotProcess() {
+        async function triggerBotProcess() {
             const radar = document.getElementById('radar-box');
             const stateText = document.getElementById('scan-state-text');
             const startBtn = document.getElementById('start-btn');
 
             radar.classList.add('scanning');
             stateText.innerText = "ANALYZING...";
-            startBtn.innerText = "STOP BOT";
+            startBtn.innerText = "ANALYZING...";
 
-            let scanTimer = 5;
-            const timerInterval = setInterval(() => {
-                scanTimer--;
-                if (scanTimer <= 0) {
-                    clearInterval(timerInterval);
-                    radar.classList.remove('scanning');
-                    stateText.innerText = "STANDBY";
-                    startBtn.innerText = "START BOT";
-                    showSignalPopup();
+            try {
+                // Formatting Pair Name (e.g., AUD/USD -> AUD_USD)
+                const formattedPair = activePair.replace('/', '_').replace(' ', '');
+                
+                // Fetching Live Signal from Python Backend
+                const response = await fetch(`${BACKEND_API_URL}/get-signal?pair=${formattedPair}&tf=${activeTF}`);
+                
+                let signalData;
+                if (response.ok) {
+                    signalData = await response.json();
+                } else {
+                    // Fallback to internal generator if server is starting up
+                    signalData = generateFallbackSignal();
                 }
-            }, 1000);
-        }
 
-        function showSignalPopup() {
-            const overlay = document.getElementById('signal-overlay');
-            const overlayPair = document.getElementById('overlay-pair');
-            const countVal = document.getElementById('countdown-val');
-            const isCall = Math.random() > 0.5;
+                radar.classList.remove('scanning');
+                stateText.innerText = "STANDBY";
+                startBtn.innerText = "START BOT";
 
-            document.getElementById('sig-arrow').innerText = isCall ? "⬆" : "⬇";
-            document.getElementById('sig-title').innerText = isCall ? "CALL" : "PUT";
-            document.getElementById('sig-conf').innerText = "CONFIDENCE " + (Math.floor(Math.random() * 10) + 90) + "%";
+                showSignalPopup(signalData);
 
-            overlayPair.innerText = activePair + " · " + activeTF;
-            overlay.style.display = "flex";
-
-            let tradeCountdown = 5;
-            countVal.innerText = tradeCountdown + "s";
-
-            const countInterval = setInterval(() => {
-                tradeCountdown--;
-                countVal.innerText = tradeCountdown + "s";
-                if (tradeCountdown <= 0) {
-                    clearInterval(countInterval);
-                    overlay.style.display = "none";
-                }
-            }, 1000);
-        }
-    </script>
-</body>
-</html>
+            } catch (error) {
+                console.log("Backend offline, using backup engine:", error);
