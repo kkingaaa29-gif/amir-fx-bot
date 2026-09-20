@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMIR FX AI BOT</title>
+    <style>
+        :root {
+            --bg-color: #030712;
+            --card-bg: #0b1329;
+            --card-border: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --text-main: #ffffff;
+            --text-sub: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 70px; display: flex; justify-content: center; }
+        
+        .app-container { width: 100%; max-width: 430px; background-color: var(--bg-color); min-height: 100vh; position: relative; }
+
+        /* Security Lock Screen */
+        .license-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #030712; z-index: 999; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .license-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; width: 100%; max-width: 350px; padding: 25px; text-align: center; }
+        .license-input { width: 100%; padding: 14px; background: #030712; border: 1px solid var(--card-border); color: #fff; border-radius: 12px; font-size: 0.95rem; text-align: center; margin: 15px 0; outline: none; }
+        .license-btn { width: 100%; padding: 14px; background: var(--accent-green); border: none; border-radius: 12px; color: #000; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .license-error { color: var(--accent-red); font-size: 0.8rem; margin-top: 10px; display: none; }
+
+        .app-content { filter: blur(12px); pointer-events: none; transition: filter 0.3s ease; }
+        .app-unlocked { filter: blur(0); pointer-events: auto; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(11, 19, 41, 0.6); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); }
+        .brand-title { font-weight: 800; font-size: 1rem; color: var(--accent-blue); letter-spacing: 0.5px; }
+        .badge-access { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--accent-blue); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+
+        /* Market Toggles */
+        .mode-selector { display: flex; gap: 10px; padding: 16px; }
+        .mode-btn { flex: 1; padding: 12px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-sub); font-weight: 700; font-size: 0.85rem; text-align: center; cursor: pointer; }
+        .mode-btn.active { background: #0f172a; color: var(--accent-blue); border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); }
+
+        /* Center Scan Section */
+        .scan-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 24px; text-align: center; }
+        .circle-radar { width: 110px; height: 110px; margin: 0 auto 16px auto; border-radius: 50%; border: 3px solid rgba(56, 189, 248, 0.15); border-top-color: var(--accent-blue); animation: spin 1.5s linear infinite; display: flex; justify-content: center; align-items: center; position: relative; }
+        .radar-status { font-size: 0.8rem; font-weight: 800; color: var(--accent-green); animation: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .scan-msg { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 16px; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .info-box { background: #030712; border: 1px solid var(--card-border); padding: 10px; border-radius: 12px; }
+        .info-label { font-size: 0.65rem; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; }
+        .info-val { font-size: 0.85rem; font-weight: 800; color: #fff; }
+
+        .btn-action { width: 100%; padding: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 14px; color: #000; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3); }
+
+        /* Sub Sections */
+        .section-label { font-size: 0.8rem; font-weight: 700; color: var(--text-sub); margin: 16px 16px 10px 16px; text-transform: uppercase; }
+        
+        .tf-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 12px 16px; scrollbar-width: none; }
+        .tf-item { background: var(--card-bg); border: 1px solid var(--card-border); padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); white-space: nowrap; cursor: pointer; }
+        .tf-item.active { background: var(--accent-blue); color: #000; border-color: var(--accent-blue); font-weight: 800; }
+
+        /* Pairs Grid with Scrollable Box */
+        .pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; max-height: 280px; overflow-y: auto; scrollbar-width: thin; }
+        .pair-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .pair-card.active { border-color: var(--accent-green); background: rgba(34, 197, 94, 0.08); }
+        .p-title { font-size: 0.75rem; font-weight: 700; }
+        .p-rate { font-size: 0.75rem; font-weight: 800; color: var(--accent-green); }
+
+        /* Popup Signal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-body { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; width: 85%; max-width: 320px; padding: 24px; text-align: center; }
+        .signal-tag { display: block; padding: 14px; border-radius: 16px; font-size: 1.3rem; font-weight: 900; margin: 16px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .tag-call { background: var(--accent-green); color: #000; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+        .tag-put { background: var(--accent-red); color: #fff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+
+        /* Bottom Menu Bar */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #070d19; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 12px 0; }
+        .nav-link { color: var(--text-sub); font-size: 0.65rem; font-weight: 600; text-decoration: none; text-align: center; }
+        .nav-link.active { color: var(--accent-blue); font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- License Key Protection Screen -->
+        <div class="license-overlay" id="licenseOverlay">
+            <div class="license-card">
+                <div style="font-weight:800; font-size:1.1rem; color:var(--accent-blue); margin-bottom:6px;">AMIR FX AI BOT</div>
+                <div style="font-size:0.75rem; color:var(--text-sub);">Enter Admin License Key To Unlock</div>
+                <input type="password" id="keyInput" class="license-input" placeholder="License Key">
+                <button class="license-btn" onclick="checkKey()">UNLOCK BOT</button>
+                <div class="license-error" id="keyErr">Invalid Key! Contact Admin.</div>
+            </div>
+        </div>
+
+        <!-- Main UI -->
+        <div class="app-content" id="appUI">
+            <div class="header">
+                <div class="brand-title">AMIR FX AI BOT</div>
+                <div class="badge-access">Access: ACTIVE</div>
+            </div>
+
+            <div class="mode-selector">
+                <div class="mode-btn active" id="modeOtc" onclick="switchMarket('OTC')">OTC MODE</div>
+                <div class="mode-btn" id="modeLive" onclick="switchMarket('LIVE')">LIVE MARKET</div>
+            </div>
+
+            <div class="scan-card">
+                <div class="circle-radar">
+                    <span class="radar-status" id="radarText">READY</span>
+                </div>
+                <div class="scan-msg" id="statusMsg">AI Signal Successfully Generated!</div>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="info-label">SELECTED PAIR</div>
+                        <div class="info-val" id="dispPair" style="color:var(--accent-blue);">AUD/USD</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">TIMEFRAME</div>
+                        <div class="info-val" id="dispTF">10s</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">ACCURACY</div>
+                        <div class="info-val" id="dispAcc" style="color:var(--accent-green);">95%</div>
+                    </div>
+                </div>
+
+                <button class="btn-action" onclick="fetchSignal()">GET AI SIGNAL</button>
+            </div>
+
+            <div class="section-label">SELECT TIMEFRAME</div>
+            <div class="tf-scroll">
+                <div class="tf-item" onclick="selectTF(this, '5s')">5s</div>
+                <div class="tf-item active" onclick="selectTF(this, '10s')">10s</div>
+                <div class="tf-item" onclick="selectTF(this, '15s')">15s</div>
+                <div class="tf-item" onclick="selectTF(this, '30s')">30s</div>
+                <div class="tf-item" onclick="selectTF(this, '1m')">1m</div>
+                <div class="tf-item" onclick="selectTF(this, '2m')">2m</div>
+                <div class="tf-item" onclick="selectTF(this, '5m')">5m</div>
+            </div>
+
+            <div class="section-label">SELECT ASSET PAIR</div>
+            <div class="pair-grid" id="pairGrid"></div>
+
+            <div class="bottom-nav">
+                <a class="nav-link active">Dashboard</a>
+                <a class="nav-link">History</a>
+                <a class="nav-link">Bot Engine</a>
+                <a class="nav-link">Stats</a>
+                <a class="nav-link">Settings</a>
+            </div>
+        </div>
+
+        <!-- Signal Modal Popup -->
+        <div class="modal" id="signalModal">
+            <div class="modal-body">
+                <div style="font-size:0.75rem; color:var(--text-sub);" id="modalHead">AUD/USD (OTC) - 10s</div>
+                <div class="signal-tag tag-call" id="modalTag">CALL ▲</div>
+                <div style="font-size:0.85rem; margin-bottom:8px;">Match Score: <strong id="modalScore" style="color:var(--accent-green);">95%</strong></div>
+                <div style="font-size:0.7rem; color:var(--text-sub); margin-bottom:16px;">ENTRY AT NEXT CANDLE OPEN</div>
+                <button class="btn-action" style="padding:12px;" onclick="closeSignal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Secret Master License Key
+        const SECRET_KEY = "AMIR-FX-9999";
+
+        function checkKey() {
+            let val = document.getElementById('keyInput').value.trim();
+            if(val === SECRET_KEY) {
+                localStorage.setItem("amir_active_key", SECRET_KEY);
+                unlockApp();
+            } else {
+                document.getElementById('keyErr').style.display = 'block';
+            }
+        }
+
+        function unlockApp() {
+            document.getElementById('licenseOverlay').style.display = 'none';
+            document.getElementById('appUI').classList.add('app-unlocked');
+            renderPairs();
+        }
+
+        window.onload = function() {
+            if(localStorage.getItem("amir_active_key") === SECRET_KEY) {
+                unlockApp();
+            }
+        };
+
+        // Complete Sary Pairs (OTC & LIVE Market)
+        const pairsData = {
+            OTC: [
+                { name: "AUD/USD (OTC)", payout: "95%" },
+                { name: "EUR/USD (OTC)", payout: "93%" },
+                { name: "GBP/USD (OTC)", payout: "92%" },
+                { name: "USD/JPY (OTC)", payout: "90%" },
+                { name: "USD/BRL (OTC)", payout: "92%" },
+                { name: "USD/INR (OTC)", payout: "89%" },
+                { name: "USD/CAD (OTC)", payout: "91%" },
+                { name: "USD/CHF (OTC)", payout: "88%" },
+                { name: "EUR/GBP (OTC)", payout: "90%" },
+                { name: "EUR/JPY (OTC)", payout: "92%" },
+                { name: "GBP/JPY (OTC)", payout: "93%" },
+                { name: "NZD/USD (OTC)", payout: "87%" },
+                { name: "USD/MXN (OTC)", payout: "94%" },
+                { name: "USD/PKR (OTC)", payout: "91%" },
+                { name: "USD/BDT (OTC)", payout: "90%" },
+                { name: "USD/EGP (OTC)", payout: "92%" }
+            ],
+            LIVE: [
+                { name: "EUR/USD", payout: "85%" },
+                { name: "GBP/USD", payout: "84%" },
+                { name: "USD/JPY", payout: "82%" },
+                { name: "AUD/USD", payout: "80%" },
+                { name: "USD/CAD", payout: "83%" },
+                { name: "USD/CHF", payout: "81%" },
+                { name: "EUR/GBP", payout: "82%" },
+                { name: "EUR/JPY", payout: "85%" },
+                { name: "GBP/JPY", payout: "84%" },
+                { name: "NZD/USD", payout: "79%" },
+                { name: "BTC/USDT", payout: "85%" },
+                { name: "ETH/USDT", payout: "83%" },
+                { name: "GOLD (XAU/USD)", payout: "88%" },
+                { name: "SILVER (XAG/USD)", payout: "80%" }
+            ]
+        };
+
+        let activeMode = "OTC";
+        let activePair = "AUD/USD (OTC)";
+        let activeTF = "10s";
+
+        function renderPairs() {
+            const container = document.getElementById('pairGrid');
+            container.innerHTML = "";
+            pairsData[activeMode].forEach(p => {
+                const item = document.createElement('div');
+                item.className = `pair-card ${p.name === activePair ? 'active' : ''}`;
+                item.onclick = () => {
+                    document.querySelectorAll('.pair-card').forEach(c => c.classList.remove('active'));
+                    item.classList.add('active');
+                    activePair = p.name;
+                    document.getElementById('dispPair').innerText = p.name.replace(" (OTC)", "");
+                };
+                item.innerHTML = `<span class="p-title">${p.name}</span><span class="p-rate">${p.payout}</span>`;
+                container.appendChild(item);
+            });
+        }
+
+        function switchMarket(mode) {
+            activeMode = mode;
+            document.getElementById('modeOtc').className = `mode-btn ${mode === 'OTC' ? 'active' : ''}`;
+            document.getElementById('modeLive').className = `mode-btn ${mode === 'LIVE' ? 'active' : ''}`;
+            activePair = pairsData[mode][0].name;
+            document.getElementById('dispPair').innerText = activePair.replace(" (OTC)", "");
+            renderPairs();
+        }
+
+        function selectTF(el, tf) {
+            document.querySelectorAll('.tf-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            activeTF = tf;
+            document.getElementById('dispTF').innerText = tf;
+        }
+
+        function fetchSignal() {
+            document.getElementById('radarText').innerText = "SCANNING";
+            document.getElementById('statusMsg').innerText = "Analyzing Market Momentum...";
+
+            setTimeout(() => {
+                let isCall = Math.random() > 0.5;
+                let accuracy = Math.floor(Math.random() * 8) + 91;
+                let tag = document.getElementById('modalTag');
+
+                if(isCall) {
+                    tag.innerText = "CALL ▲";
+                    tag.className = "signal-tag tag-call";
+                } else {
+                    tag.innerText = "PUT ▼";
+                    tag.className = "signal-tag tag-put";
+                }
+
+                document.getElementById('modalHead').innerText = `${activePair} - Timeframe: ${activeTF}`;
+                document.getElementById('modalScore').innerText = accuracy + "%";
+                document.getElementById('dispAcc').innerText = accuracy + "%";
+                
+                document.getElementById('signalModal').style.display = 'flex';
+                document.getElementById('radarText').innerText = "READY";
+                document.getElementById('statusMsg').innerText = "AI Signal Successfully Generated!";
+            }, 1200);
+        }
+
+        function closeSignal() {
+            document.getElementById('signalModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
